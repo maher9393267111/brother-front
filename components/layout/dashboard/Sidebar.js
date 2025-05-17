@@ -141,7 +141,7 @@ function Sidebar({ isServiceProvider, isToggled, toggleTrueFalse }) {
                     "flex items-center justify-between flex-shrink-0 p-2 lg:justify-center"}
                 >
                     <span className="p-2 text-xl font-semibold leading-8 tracking-wider uppercase whitespace-nowrap">
-                        Hero<span className={isToggled ? '' : "lg:hidden"} >Fix</span>
+                        Site<span className={isToggled ? '' : "lg:hidden"} >Dashboard</span>
                     </span>
 
                     {/* mobile sidebar close button */}
