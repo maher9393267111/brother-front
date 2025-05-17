@@ -25,7 +25,7 @@ const baseURL = "https://brother-back.vercel.app"
 const localURL = "http://localhost:3001"
 
 const http = axios.create({
-  baseURL: localURL + `/api`,
+  baseURL: baseURL + `/api`,
   
   // retryDelay: 1000,
   // maxRetries: 3,
