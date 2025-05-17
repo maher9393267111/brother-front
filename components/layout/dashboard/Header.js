@@ -64,7 +64,7 @@ const Header = ({ isToggled, toggleTrueFalse, handlePost }) => {
 
                         <Menu as="div" className="relative leading-[0px] z-50">
                             <Menu.Button as="span" className=" p-0 cursor-pointer mr-5">
-                                <img src={settings?.logo?.url || "/images/avatar/1.png"} className='w-8 rounded-full' alt="" />
+                                <img src={ "/images/avatar/1.png"} className='w-8 rounded-full' alt="" />
                             </Menu.Button>
                             <Menu.Items as="div" className="mt-[20px] absolute right-0 bg-white min-w-[220px] px-5 focus-visible:outline-none leading-7 shadow-sm py-3">
                                 {/* <div>Menu Item 3</div> */}
