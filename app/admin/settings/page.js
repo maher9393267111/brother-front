@@ -44,6 +44,8 @@ import WorkingHoursSection from './WorkingHoursSection';
 //mediaModal
 import MediaModal from '@components/modal/MediaModal';
 import MediaUpload from '@components/ui/MediaUpload';
+import { useDispatch } from 'react-redux';
+import { setSettings as setReduxSettings } from '@features/settings/settingsSlice';
 
 function parseWorkingHoursString(workingHoursStr) {
   const defaultWorkingHours = [
@@ -196,6 +198,7 @@ export default function SettigsPage() {
   const [expandedNavItem, setExpandedNavItem] = useState(null);
   const [expandedFooterColumn, setExpandedFooterColumn] = useState(null);
   const [publishedForms, setPublishedForms] = useState([]);
+  const dispatch = useDispatch();
   
   // Get all icon names from our iconMap
   const iconList = Object.keys(iconMap);
@@ -462,8 +465,13 @@ const workingHoursArray = useFieldArray({
       const processedData = { ...formData };
 
       console.log('Submitting settings data:', processedData);
-      await updateSiteSettings(processedData);
+       const updatedSettings = await updateSiteSettings(processedData);
       toast.success('Settings updated successfully');
+      
+      // Dispatch action to update Redux store
+      if (updatedSettings) {
+        dispatch(setReduxSettings(updatedSettings));
+      }
       
       // Reload settings to get the updated data (optional, as state is set)
       // const updated = await getSiteSettings();
