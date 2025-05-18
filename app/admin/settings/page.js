@@ -5,6 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { Tab } from '@headlessui/react';
 import { toast } from 'react-toastify';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { 
   XMarkIcon, 
   PhotoIcon, 
@@ -198,6 +199,8 @@ export default function SettigsPage() {
   const [expandedNavItem, setExpandedNavItem] = useState(null);
   const [expandedFooterColumn, setExpandedFooterColumn] = useState(null);
   const [publishedForms, setPublishedForms] = useState([]);
+  const [isDraggingColumn, setIsDraggingColumn] = useState(false);
+  const [isDraggingLink, setIsDraggingLink] = useState(false);
   const dispatch = useDispatch();
   
   // Get all icon names from our iconMap
@@ -504,6 +507,74 @@ const workingHoursArray = useFieldArray({
     const updatedLinks = currentColumn.links.filter((_, i) => i !== linkIndex);
     // Use update method from useFieldArray to ensure state propagation
     footerLinksArray.update(columnIndex, { ...currentColumn, links: updatedLinks });
+  };
+
+  // Handle drag and drop for footer columns and links
+  const onDragEnd = (result) => {
+    // Reset drag states
+    setIsDraggingColumn(false);
+    setIsDraggingLink(false);
+    
+    const { source, destination, type } = result;
+    
+    // If dropped outside a droppable area
+    if (!destination) return;
+    
+    // If dropped at the same position
+    if (source.droppableId === destination.droppableId && source.index === destination.index) {
+      return;
+    }
+    
+    // Handle column reordering
+    if (type === 'column') {
+      const columns = Array.from(watch('footerLinks'));
+      const [movedColumn] = columns.splice(source.index, 1);
+      columns.splice(destination.index, 0, movedColumn);
+      
+      // Update the form with the new order
+      setValue('footerLinks', columns);
+      return;
+    }
+    
+    // Handle link reordering within the same column
+    if (type === 'link' && source.droppableId === destination.droppableId) {
+      const columnIndex = parseInt(source.droppableId.split('-')[1]);
+      const column = watch(`footerLinks.${columnIndex}`);
+      const links = Array.from(column.links || []);
+      
+      const [movedLink] = links.splice(source.index, 1);
+      links.splice(destination.index, 0, movedLink);
+      
+      // Update the column with the new links order
+      const updatedColumn = { ...column, links };
+      footerLinksArray.update(columnIndex, updatedColumn);
+      return;
+    }
+    
+    // Handle link moving between columns
+    if (type === 'link' && source.droppableId !== destination.droppableId) {
+      const sourceColumnIndex = parseInt(source.droppableId.split('-')[1]);
+      const destColumnIndex = parseInt(destination.droppableId.split('-')[1]);
+      
+      const sourceColumn = watch(`footerLinks.${sourceColumnIndex}`);
+      const destColumn = watch(`footerLinks.${destColumnIndex}`);
+      
+      const sourceLinks = Array.from(sourceColumn.links || []);
+      const destLinks = Array.from(destColumn.links || []);
+      
+      // Remove from source column
+      const [movedLink] = sourceLinks.splice(source.index, 1);
+      
+      // Add to destination column
+      destLinks.splice(destination.index, 0, movedLink);
+      
+      // Update both columns
+      const updatedSourceColumn = { ...sourceColumn, links: sourceLinks };
+      const updatedDestColumn = { ...destColumn, links: destLinks };
+      
+      footerLinksArray.update(sourceColumnIndex, updatedSourceColumn);
+      footerLinksArray.update(destColumnIndex, updatedDestColumn);
+    }
   };
 
   // Add navTitle item
@@ -882,101 +953,176 @@ const workingHoursArray = useFieldArray({
                     </button>
                   </div>
                   
-                  <div className="space-y-4">
-                    {footerLinksArray.fields.map((column, columnIndex) => (
-                      <Disclosure
-                        key={column.id}
-                        as="div"
-                        className="border border-gray-200 rounded-lg overflow-hidden"
-                        defaultOpen={columnIndex === expandedFooterColumn}
-                      >
-                        {({ open }) => (
-                          <>
-                            <Disclosure.Button 
-                              className="w-full px-4 py-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-700"
-                              onClick={() => setExpandedFooterColumn(open ? null : columnIndex)}
+                  <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="footer-columns" type="column">
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`space-y-4 ${
+                            snapshot.isDraggingOver ? "bg-gray-50 rounded-lg p-2" : ""
+                          }`}
+                        >
+                          {footerLinksArray.fields.map((column, columnIndex) => (
+                            <Draggable
+                              key={column.id}
+                              draggableId={`column-${column.id}`}
+                              index={columnIndex}
                             >
-                              <span>{column.heading || `Column ${columnIndex + 1}`}</span>
-                              <div className="flex items-center">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    footerLinksArray.remove(columnIndex);
-                                  }}
-                                  className="mr-2 p-1 rounded-full hover:bg-red-100 text-red-500"
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  className={`border rounded-lg overflow-hidden ${
+                                    snapshot.isDragging
+                                      ? "border-primary-500 shadow-lg"
+                                      : "border-gray-200"
+                                  }`}
                                 >
-                                  <TrashIcon className="h-4 w-4" />
-                                </button>
-                                <ChevronDownIcon
-                                  className={`${open ? 'transform rotate-180' : ''} w-5 h-5 text-gray-500`}
-                                />
-                              </div>
-                            </Disclosure.Button>
-                            
-                            <Disclosure.Panel className="px-4 py-3 bg-white">
-                              <div className="space-y-4">
-                                <div>
-                                  <label className="block mb-2 text-sm font-semibold text-gray-700">
-                                    Column Heading
-                                  </label>
-                                  <input
-                                    type="text"
-                                    className="w-full rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all px-3 py-2 outline-none"
-                                    placeholder="Enter column heading"
-                                    {...register(`footerLinks.${columnIndex}.heading`)}
-                                  />
+                                  <Disclosure
+                                    as="div"
+                                    defaultOpen={columnIndex === expandedFooterColumn}
+                                  >
+                                    {({ open }) => (
+                                      <>
+                                        <Disclosure.Button 
+                                          className="w-full px-4 py-3 flex justify-between items-center bg-gray-50 hover:bg-gray-100 text-left font-medium text-gray-700"
+                                          onClick={() => setExpandedFooterColumn(open ? null : columnIndex)}
+                                        >
+                                          <div className="flex items-center">
+                                            <div
+                                              {...provided.dragHandleProps}
+                                              className="cursor-move p-1 mr-2 rounded hover:bg-gray-200"
+                                            >
+                                              <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />
+                                            </div>
+                                            <span>{column.heading || `Column ${columnIndex + 1}`}</span>
+                                          </div>
+                                          <div className="flex items-center">
+                                            <button
+                                              type="button"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                footerLinksArray.remove(columnIndex);
+                                              }}
+                                              className="mr-2 p-1 rounded-full hover:bg-red-100 text-red-500"
+                                            >
+                                              <TrashIcon className="h-4 w-4" />
+                                            </button>
+                                            <ChevronDownIcon
+                                              className={`${open ? 'transform rotate-180' : ''} w-5 h-5 text-gray-500`}
+                                            />
+                                          </div>
+                                        </Disclosure.Button>
+                                        
+                                        <Disclosure.Panel className="px-4 py-3 bg-white">
+                                          <div className="space-y-4">
+                                            <div>
+                                              <label className="block mb-2 text-sm font-semibold text-gray-700">
+                                                Column Heading
+                                              </label>
+                                              <input
+                                                type="text"
+                                                className="w-full rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all px-3 py-2 outline-none"
+                                                placeholder="Enter column heading"
+                                                {...register(`footerLinks.${columnIndex}.heading`)}
+                                              />
+                                            </div>
+                                            
+                                            <div className="space-y-2">
+                                              <div className="flex justify-between items-center">
+                                                <label className="block text-sm font-semibold text-gray-700">
+                                                  Links
+                                                </label>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => addFooterLink(columnIndex)}
+                                                  className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-primary-50 text-primary-600 hover:bg-primary-100"
+                                                >
+                                                  <PlusIcon className="h-3 w-3 mr-1" />
+                                                  Add Link
+                                                </button>
+                                              </div>
+                                              
+                                              <Droppable 
+                                                droppableId={`links-${columnIndex}`} 
+                                                type="link"
+                                              >
+                                                {(provided, snapshot) => (
+                                                  <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.droppableProps}
+                                                    className={`space-y-2 ${
+                                                      snapshot.isDraggingOver ? "bg-gray-50 rounded-lg p-2" : ""
+                                                    }`}
+                                                  >
+                                                    {column.links && column.links.map((link, linkIndex) => (
+                                                      <Draggable
+                                                        key={`${columnIndex}-link-${linkIndex}`}
+                                                        draggableId={`${columnIndex}-link-${linkIndex}`}
+                                                        index={linkIndex}
+                                                      >
+                                                        {(provided, snapshot) => (
+                                                          <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            className={`flex items-start space-x-2 p-2 rounded-lg ${
+                                                              snapshot.isDragging
+                                                                ? "border border-primary-300 bg-primary-50 shadow-md"
+                                                                : ""
+                                                            }`}
+                                                          >
+                                                            <div
+                                                              {...provided.dragHandleProps}
+                                                              className="mt-2 cursor-move p-1 rounded hover:bg-gray-200"
+                                                            >
+                                                              <ArrowsUpDownIcon className="h-4 w-4 text-gray-500" />
+                                                            </div>
+                                                            <div className="flex-1 space-y-2">
+                                                              <input
+                                                                type="text"
+                                                                className="w-full rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all px-3 py-2 outline-none"
+                                                                placeholder="Link Title"
+                                                                {...register(`footerLinks.${columnIndex}.links.${linkIndex}.title`)}
+                                                              />
+                                                              <input
+                                                                type="text"
+                                                                className="w-full rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all px-3 py-2 outline-none"
+                                                                placeholder="URL"
+                                                                {...register(`footerLinks.${columnIndex}.links.${linkIndex}.url`)}
+                                                              />
+                                                            </div>
+                                                            
+                                                            <button
+                                                              type="button"
+                                                              onClick={() => removeFooterLink(columnIndex, linkIndex)}
+                                                              className="p-2 rounded-full hover:bg-red-100 text-red-500 mt-1"
+                                                            >
+                                                              <TrashIcon className="h-4 w-4" />
+                                                            </button>
+                                                          </div>
+                                                        )}
+                                                      </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                  </div>
+                                                )}
+                                              </Droppable>
+                                            </div>
+                                          </div>
+                                        </Disclosure.Panel>
+                                      </>
+                                    )}
+                                  </Disclosure>
                                 </div>
-                                
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-center">
-                                    <label className="block text-sm font-semibold text-gray-700">
-                                      Links
-                                    </label>
-                                    <button
-                                      type="button"
-                                      onClick={() => addFooterLink(columnIndex)}
-                                      className="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-primary-50 text-primary-600 hover:bg-primary-100"
-                                    >
-                                      <PlusIcon className="h-3 w-3 mr-1" />
-                                      Add Link
-                                    </button>
-                                  </div>
-                                  
-                                  {column.links && column.links.map((link, linkIndex) => (
-                                    <div key={linkIndex} className="flex items-start space-x-2">
-                                      <div className="flex-1 space-y-2">
-                                        <input
-                                          type="text"
-                                          className="w-full rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all px-3 py-2 outline-none"
-                                          placeholder="Link Title"
-                                          {...register(`footerLinks.${columnIndex}.links.${linkIndex}.title`)}
-                                        />
-                                        <input
-                                          type="text"
-                                          className="w-full rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all px-3 py-2 outline-none"
-                                          placeholder="URL"
-                                          {...register(`footerLinks.${columnIndex}.links.${linkIndex}.url`)}
-                                        />
-                                      </div>
-                                      
-                                      <button
-                                        type="button"
-                                        onClick={() => removeFooterLink(columnIndex, linkIndex)}
-                                        className="p-2 rounded-full hover:bg-red-100 text-red-500 mt-1"
-                                      >
-                                        <TrashIcon className="h-4 w-4" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </Disclosure.Panel>
-                          </>
-                        )}
-                      </Disclosure>
-                    ))}
-                  </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </div>
               </div>
             </Tab.Panel>
