@@ -21,7 +21,7 @@ const DynamicForm = ({ form, onSubmitSuccess, customButtonText, customButtonColo
   
   // New states for steps functionality
   const [currentStep, setCurrentStep] = useState(0);
-  const [fieldsPerStep] = useState(2);
+  const [fieldsPerStep] = useState(1);
   const [submissionAttempted, setSubmissionAttempted] = useState(false); // Track if submission was attempted
   
   console.log('Form data--->', form)
@@ -1070,7 +1070,9 @@ const DynamicForm = ({ form, onSubmitSuccess, customButtonText, customButtonColo
 };
 
 export default DynamicForm;
-// 'use client';
+
+
+
 // import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 // import { toast } from 'react-toastify';
 // import { submitForm, uploadMediaFile,  deleteFileNormal } from '@services/api';

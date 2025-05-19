@@ -3,7 +3,9 @@
 
 import * as api from '../services/api'; // Adjust path as necessary
 
-const BASE_URL = 'https://letsbuildsw.co.uk'; // <<<--- CHANGE THIS TO YOUR ACTUAL DOMAIN
+// Use the canonical domain for sitemaps: always include https and www for consistency and to avoid duplicate content issues.
+// See: https://spotibo.com/sitemap-guide/#3-what-types-of-sitemaps-are-most-suitable-for-your-website
+const BASE_URL = 'https://penguincooling.co.uk';
 
 export default async function sitemap() {
   console.log("Generating sitemap...");
@@ -32,7 +34,24 @@ export default async function sitemap() {
         changeFrequency: 'daily',
         priority: 0.8,
       },
-      // Add other static pages like /about, /services etc.
+      {
+        url: `${BASE_URL}/privacy-policy`,
+        lastModified: currentDate,
+        changeFrequency: 'yearly',
+        priority: 0.5,
+      },
+      {
+        url: `${BASE_URL}/terms-conditions`,
+        lastModified: currentDate,
+        changeFrequency: 'yearly',
+        priority: 0.5,
+      },
+      {
+        url: `${BASE_URL}/cookie-policy`,
+        lastModified: currentDate,
+        changeFrequency: 'yearly',
+        priority: 0.5,
+      },
     ];
     console.log("Generated static URLs:", staticUrls);
 

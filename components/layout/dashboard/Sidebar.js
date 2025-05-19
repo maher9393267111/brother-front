@@ -81,19 +81,27 @@ function Sidebar({ isServiceProvider, isToggled, toggleTrueFalse }) {
         },
 
 
-        //contact settings
-        // {
-        //     name: "Contact Settings",
-        //     path: "contact-settings",
-        //     icon: <><Icon.EnvelopeIcon /></>
-        // },
-        
+      //privacy policy
+      {
+        name: "Privacy Policy",
+        path: "privacy-policy",
+        icon: <><Icon.DocumentTextIcon /></>
+      },
 
-        // {
-        //     name: "Contact Customers",
-        //     path: "contact-customers",
-        //     icon: <><Icon.EnvelopeIcon /></>
-        // },
+      //terms conditions
+      {
+        name: "Terms Conditions",
+        path: "terms-conditions",
+        icon: <><Icon.DocumentTextIcon /></>
+      },
+
+      //cookie policy
+      {
+        name: "Cookie Policy",
+        path: "cookie-policy",
+        icon: <><Icon.DocumentTextIcon /></>
+      },
+      
   
       
         
