@@ -4,6 +4,8 @@ export const revalidate = 0;
 import PageContent from "../components/PageContent";
 import { getMainPage, getSiteSettings } from "@services/api";
 import Layout from "@components/layout/landing/Layout";
+import ConditionalGTM from "@components/ConditionalGTM";
+import CookieConsentModal from "@components/CookieConsentModal";
 
 export async function generateMetadata() {
     try {
@@ -100,6 +102,8 @@ export default async function Home() {
                 />
             )}
              <Layout headerStyle={1}>
+                <ConditionalGTM />
+                <CookieConsentModal />
                 <PageContent pageData={pageData} />
             </Layout>
         </>
