@@ -22,8 +22,8 @@ export async function generateMetadata() {
     try {
         const settings = await getSiteSettings();
         
-        const defaultTitle = 'letsbuildsw.co.uk';
-        const defaultDescription = 'letsbuildsw.co.uk ';
+        const defaultTitle = 'penguincooling.co.uk';
+        const defaultDescription = 'penguincooling.co.uk ';
         
         const metadataBase = {};
         if (settings?.ogImage?.url) {
@@ -52,9 +52,9 @@ export async function generateMetadata() {
         } : undefined;
 
         return {
-            metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://letsbuildsw.co.uk'),
+            metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://penguincooling.co.uk'),
             title: settings?.metaTitle || settings?.title || defaultTitle,
-            url: settings?.canonicalUrl || 'https://letsbuildsw.co.uk',
+            url: settings?.canonicalUrl || 'https://penguincooling.co.uk',
             description: settings?.metaDescription || settings?.description || defaultDescription,
             keywords: settings?.metaKeywords ? settings.metaKeywords.split(',').map(k => k.trim()) : [],
             openGraph: {
@@ -74,7 +74,7 @@ export async function generateMetadata() {
                 types: {
                     'application/json+oembed': [
                         {
-                            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://letsbuildsw.co.uk'}/api/oembed`,
+                            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://penguincooling.co.uk'}/api/oembed`,
                             title: settings?.title || defaultTitle,
                         },
                     ],
@@ -145,7 +145,18 @@ export default async function RootLayout({ children }) {
 
     return (
         <html lang="en" className="scroll-smooth hover:scroll-auto" id='top' style={primaryColorStyle}>
-            <head>{/* Remove whitespace and ensure no extra text nodes */}
+            <head>
+                {/* Google Tag Manager */}
+                <Script id="gtm-head" strategy="beforeInteractive">
+                    {`
+                        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                        })(window,document,'script','dataLayer','GTM-N5D27MCH');
+                    `}
+                </Script>
+                {/* End Google Tag Manager */}
                 <link rel="icon" href={settings?.ogImage?.url } />
                 {headScript ? (
                    <Script
@@ -156,6 +167,16 @@ export default async function RootLayout({ children }) {
                 ) : null}
             </head>
             <body className={inter.className} suppressHydrationWarning={true}>
+                {/* Google Tag Manager (noscript) */}
+                <noscript>
+                    <iframe
+                        src="https://www.googletagmanager.com/ns.html?id=GTM-N5D27MCH"
+                        height="0"
+                        width="0"
+                        style={{ display: "none", visibility: "hidden" }}
+                    ></iframe>
+                </noscript>
+                {/* End Google Tag Manager (noscript) */}
                 <ClientProviders initialSettings={settings}>
                     <TrackPageViews />
                     {children}

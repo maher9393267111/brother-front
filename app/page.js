@@ -32,7 +32,7 @@ export async function generateMetadata() {
       }
   
       const metadata = {
-        metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://letsbuildsw.co.uk'),
+        metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://penguincooling.co.uk'),
         title: title || settings.title,
         description: description || settings.metaDescription ,
         keywords: page.metaKeywords || settings.metaKeywords || 'affordable boiler installation south wales, heat pumps south wales, heating services south wales, home renovations south wales, energy efficient heating south wales',
@@ -56,7 +56,7 @@ export async function generateMetadata() {
   
       // Add canonical URL if available
       // if (page.canonicalUrl) {
-        metadata.alternates = { canonical: page?.canonicalUrl || 'https://letsbuildsw.co.uk' };
+        metadata.alternates = { canonical: page?.canonicalUrl || 'https://penguincooling.co.uk' };
       
   
       // Add robots meta tag if available
@@ -68,7 +68,7 @@ export async function generateMetadata() {
     } catch (error) {
       console.error('Error generating metadata:', error);
       return {
-        title: "Let's Build - Affordable Boiler Installation & Heat Pumps in South Wales",
+        title: "Penguin Cooling - Affordable Boiler Installation & Heat Pumps in South Wales",
         description: "Expert affordable boiler installation, heat pumps, and air conditioning services across South Wales. Quality workmanship & free quotes."
       };
     }
