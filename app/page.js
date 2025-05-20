@@ -102,8 +102,8 @@ export default async function Home() {
                 />
             )}
              <Layout headerStyle={1}>
-                {/* <ConditionalGTM />
-                <CookieConsentModal /> */}
+                <ConditionalGTM />
+                <CookieConsentModal />
                 <PageContent pageData={pageData} />
             </Layout>
         </>
